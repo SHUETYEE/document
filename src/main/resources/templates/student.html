@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <script src="http://www.itxst.com/package/bootstrap-table-1.14.1/jquery-3.3.1/jquery.js"></script>
+    <link href="http://www.itxst.com/package/bootstrap-4.3.1/css/bootstrap.css" rel="stylesheet"/>
+    <link rel="stylesheet" type="text/css" href="https://www.layuicdn.com/layui/css/layui.css"/>
+    <link href="http://www.itxst.com/package/bootstrap-table-1.15.3/bootstrap-table.css" rel="stylesheet"/>
+    <script src="http://www.itxst.com/package/bootstrap-table-1.15.3/bootstrap-table.js"></script>
+    <script src="https://cdn.staticfile.org/popper.js/1.15.0/umd/popper.min.js"></script>
+    <script src="https://cdn.staticfile.org/twitter-bootstrap/4.3.1/js/bootstrap.min.js"></script>
+    <script src="https://www.layuicdn.com/layui/layui.js"></script>
+    <title>Bootstrap Table getSelections例子</title>
+    <style>
+        .table-demo {
+            width: 97%;
+            margin: 30px auto 0px auto;
+        }
+    </style>
+    <script>
+        function add() {
+            var form = $('#formAdd').serialize();  //序列化内容
+            var data = decodeURIComponent(form, true); //将数据解码
+            $.ajax({
+                url: 'student/add',
+                type: 'post',
+                data: data,
+                success: function (data) {
+                    if (data.msg) {
+                        layer.alert('添加成功', {
+                            icon: 1,
+                            skin: 'layer-ext-moon'
+                        })
+                    } else {
+                        layer.alert('添加失败', {
+                            icon: 2,
+                            skin: 'layer-ext-moon'
+                        })
+                    }
+                }
+            });
+        };
+    </script>
+
+</head>
+<body>
+<div id="toolbar">
+    <div class="layui-btn-group">
+        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#myModal">添加</button>
+        <button type="button" class="layui-btn layui-btn-normal" data-toggle="modal" data-target="#myModal2">导入</button>
+        <button type="button" class="layui-btn" data-toggle="modal" data-target="#myModal3">导出</button>
+    </div>
+</div>
+<div class="table-demo">
+    <table id="table" class="text-center"></table>
+</div>
+<script>
+
+    //这段必须放在表格初始化之前。
+    function addFunctionAlty(value, row, index) {
+        return [
+            '<button id="bind" type="button" class="layui-btn layui-btn-danger">删除</button>',
+            '<button id="unbind" type="button" class="layui-btn layui-btn-danger">编辑</button>',
+        ].join('');
+    }
+
+    window.operateEvents = {
+        'click #bind': function (e, value, row, index) {
+            layer.confirm('您确定要删除吗？', {
+                btn: ['确定', '取消'] //按钮
+            }, function () {
+                $.ajax({
+                    url: 'student/delete?id=' + row.id,
+                    type: 'get',
+                    success: function (data) {
+                        if (data.msg) {
+                            layer.alert('删除成功', {
+                                icon: 1,
+                                skin: 'layer-ext-moon'
+                            })
+                            $('#table').bootstrapTable('refresh');//刷新当前表格数据
+                        } else {
+                            layer.alert('删除失败', {
+                                icon: 2,
+                                skin: 'layer-ext-moon'
+                            })
+                        }
+                    }
+                });
+            }, function () {
+
+            });
+
+        }, 'click #unbind': function (e, value, row, index) {
+            $("#snoedit").attr("value",row.sno);
+            $("#nameedit").attr("value",row.name);
+            $("#idcardedit").attr("value",row.idcard);
+            $("#majoredit").attr("value",row.major);
+            $("#gradeedit").attr("value",row.grade);
+            $("#collegeedit").attr("value",row.college);
+            $('#myModal4').modal('show')
+        }
+    };
+
+    // 设置需要显示的列
+    var columns = [{
+        field: "checked",
+        title: '编号',
+        checkbox: true
+    }, {
+        field: 'sno',
+        title: '学号',
+    }, {
+        field: 'name',
+        title: '姓名',
+    }, {
+        field: 'gander',
+        title: '性别',
+    }, {
+        field: 'major',
+        title: '专业',
+    }, {
+        field: 'grade',
+        title: '年级',
+    }, {
+        field: 'college',
+        title: '学院',
+    }, {
+        field: 'idcard',
+        title: '身份证号',
+    }, {
+        field: 'operate',
+        title: '操作',
+        events: operateEvents,//给按钮注册事件
+        formatter: addFunctionAlty//表格中增加按钮  
+    }];
+
+
+    $('#table').bootstrapTable({
+        url: 'student/findAll',
+        pagination: true,//开启分页
+        search: true, //开启刷选
+        columns: columns,
+        pageSize: 10,
+        cache: false, // 设置为 false 禁用 AJAX 数据缓存， 默认为true
+        pageList: [10, 25, 50],
+        pageNumber: 1, // 首页页码
+        maintainSelected: true,
+        striped: true,  //表格显示条纹，默认为false
+        clickToSelect: true,//是否启用点击选中行
+        locale: 'zh-CN',//中文支持,
+        toolbar: "#toolbar"
+    });
+
+    function getSels() {
+        var rows = $('#table').bootstrapTable('getSelections');
+        var a = JSON.stringify(rows)
+        var r = JSON.parse(a);
+        alert(r[0].id)
+    }
+</script>
+<!-- 添加模态框 -->
+<div class="modal fade" id="myModal">
+    <div class="modal-dialog">
+        <div class="modal-content">
+
+            <!-- 模态框头部 -->
+            <div class="modal-header">
+                <h4 class="modal-title">添加学生信息</h4>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+
+            <!-- 模态框主体 -->
+            <div class="modal-body">
+                <form class="layui-form" id="formAdd">
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">学号</label>
+                        <div class="layui-input-block">
+                            <input type="text" name="sno" id="snoAdd" lay-verify="title" required="required"
+                                   autocomplete="off" placeholder="请输入学号" class="layui-input">
+                        </div>
+                    </div>
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">姓名</label>
+                        <div class="layui-input-block">
+                            <input type="text" name="name" id="nameAdd" lay-verify="title" required autocomplete="off"
+                                   placeholder="请输入学生姓名" class="layui-input">
+                        </div>
+                    </div>
+
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">性别</label>
+                        <div class="layui-input-block">
+                            <input type="radio" name="gender" id="genderAdd" value="男" title="男" checked>
+                            <input type="radio" name="gender" id="genderAdd" value="女" title="女">
+                        </div>
+                    </div>
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">身份证</label>
+                        <div class="layui-input-block">
+                            <input type="text" name="idcard" id="idcardAdd" required lay-verify="identity"
+                                   placeholder="请输入身份证号" autocomplete="off" class="layui-input">
+                        </div>
+                    </div>
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">学院</label>
+                        <div class="layui-input-block">
+                            <input type="text" name="college" id="collegeAdd" lay-verify="title" autocomplete="off"
+                                   value="计算机科学与信息工程学院" readonly="readonly" class="layui-input">
+                        </div>
+                    </div>
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">年级</label>
+                        <div class="layui-input-block">
+                            <select name="grade" lay-filter="aihao" id="gradeAdd">
+                                <option value="4"></option>
+                                <option value="">16级</option>
+                                <option value="0">17级</option>
+                                <option value="1" selected="">18级</option>
+                                <option value="2">19级</option>
+                                <option value="3">20级</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">专业</label>
+                        <div class="layui-input-block">
+                            <select name="major" id="majorAdd" lay-filter="aihao">
+                                <option value=""></option>
+                                <option value="0">网络工程</option>
+                                <option value="1" selected="">软件工程</option>
+                                <option value="2">物联网工程</option>
+                                <option value="3">数据科学与大数据</option>
+                                <option value="4">计算机科学与技术</option>
+                            </select>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <!-- 模态框底部 -->
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-dismiss="modal" onclick="add()">添加</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">关闭</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- 导入模态框 -->
+<div class="modal fade" id="myModal2">
+    <div class="modal-dialog">
+        <div class="modal-content">
+
+            <!-- 模态框头部 -->
+            <div class="modal-header">
+                <h4 class="modal-title">选择Excel</h4>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+
+            <!-- 模态框主体 -->
+            <div class="modal-body">
+                <form class="layui-form" id="formimport">
+                    <div style="text-align: center">
+                        <div class="layui-upload-drag" id="test10">
+                            <i class="layui-icon"></i>
+                            <p>点击上传，或将文件拖拽到此处</p>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <!-- 模态框底部 -->
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-dismiss="modal">确定</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">关闭</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- 导出模态框 -->
+<div class="modal fade" id="myModal3">
+    <div class="modal-dialog">
+        <div class="modal-content">
+
+            <!-- 模态框头部 -->
+            <div class="modal-header">
+                <h4 class="modal-title">选择导出条件</h4>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+
+            <!-- 模态框主体 -->
+            <div class="modal-body">
+                <form class="layui-form" id="formexport">
+                    <div style="text-align: center">
+                        <div class="layui-form-item">
+                            <label class="layui-form-label">年级</label>
+                            <div class="layui-input-block">
+                                <select name="grade" lay-filter="aihao" id="gradeexport">
+                                    <option value="16级" selected="">16级</option>
+                                    <option value="17级">17级</option>
+                                    <option value="18级">18级</option>
+                                    <option value="19级">19级</option>
+                                    <option value="20级">20级</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="layui-form-item">
+                            <label class="layui-form-label">专业</label>
+                            <div class="layui-input-block">
+                                <select name="major" id="majorexport" lay-filter="aihao">
+                                    <option value="软件工程" selected>软件工程</option>
+                                    <option value="网络工程">网络工程</option>
+                                    <option value="物联网工程">物联网工程</option>
+                                    <option value="数据科学与大数据">数据科学与大数据</option>
+                                    <option value="计算机科学与技术">计算机科学与技术</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <!-- 模态框底部 -->
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-dismiss="modal" onclick="import2()">导出</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">关闭</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- 修改模态框 -->
+<div class="modal fade" id="myModal4">
+    <div class="modal-dialog">
+        <div class="modal-content">
+
+            <!-- 模态框头部 -->
+            <div class="modal-header">
+                <h4 class="modal-title">添加学生信息</h4>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+
+            <!-- 模态框主体 -->
+            <div class="modal-body">
+                <form class="layui-form" id="formedit">
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">学号</label>
+                        <div class="layui-input-block">
+                            <input type="text" name="sno" id="snoedit" lay-verify="title" required="required"
+                                   autocomplete="off" placeholder="请输入学号"  class="layui-input" >
+
+                    </div>
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">姓名</label>
+                        <div class="layui-input-block">
+                            <input type="text" name="name" id="nameedit" lay-verify="title" required="required"
+                                   autocomplete="off" placeholder="请输入姓名" class="layui-input">
+                        </div>
+                    </div>
+
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">性别</label>
+                        <div class="layui-input-block">
+                            <input type="radio" name="gender" id="genderedit" value="男" title="男" checked>
+                            <input type="radio" name="gender" id="genderedit" value="女" title="女">
+                        </div>
+                    </div>
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">身份证</label>
+                        <div class="layui-input-block">
+                            <input type="text" name="idcard" id="idcardedit" required lay-verify="identity"
+                                   placeholder="请输入身份证号" autocomplete="off" class="layui-input">
+                        </div>
+                    </div>
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">学院</label>
+                        <div class="layui-input-block">
+                            <input type="text" name="college" id="collegeedit" lay-verify="title" autocomplete="off"
+                                   value="计算机科学与信息工程学院" readonly="readonly" class="layui-input">
+                        </div>
+                    </div>
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">年级</label>
+                        <div class="layui-input-block">
+                            <select name="grade" lay-filter="aihao" id="gradeedit">
+                                <option value="4"></option>
+                                <option value="">16级</option>
+                                <option value="0">17级</option>
+                                <option value="1" selected="">18级</option>
+                                <option value="2">19级</option>
+                                <option value="3">20级</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">专业</label>
+                        <div class="layui-input-block">
+                            <select name="major" id="majoredit" lay-filter="aihao">
+                                <option value=""></option>
+                                <option value="0">网络工程</option>
+                                <option value="1" selected="">软件工程</option>
+                                <option value="2">物联网工程</option>
+                                <option value="3">数据科学与大数据</option>
+                                <option value="4">计算机科学与技术</option>
+                            </select>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <!-- 模态框底部 -->
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-dismiss="modal" onclick="add()">添加</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">关闭</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+</body>
+<script>
+    layui.use('form', function () {
+        var form = layui.form;
+    });
+    layui.use('layer', function () {
+        var $ = layui.jquery,
+            layer = layui.layer;
+    });
+
+    layui.use('upload', function () {
+        upload = layui.upload;
+        upload.render({
+            elem: '#test10'
+            , url: 'student/upload/'
+            , accept: 'file' //普通文件
+            , done: function (res) {
+                $('#myModal2').modal('hide')
+                layer.alert('上传成功', {
+                    icon: 1,
+                    skin: 'layer-ext-moon'
+                })
+            }
+            , error: function () {
+                $('#myModal2').modal('hide')
+                layer.alert('上传失败', {
+                    icon: 2,
+                    skin: 'layer-ext-moon'
+                })
+            }
+        });
+    });
+
+    function import2() {
+        location.href='student/export?major='+$("#majorexport").val()+'&grade='+$("#gradeexport").val();
+    }
+</script>
+</html>

@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.itheima.document.dao.StudentDao">
+
+    <resultMap type="com.itheima.document.entity.Student" id="StudentMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="sno" column="sno" jdbcType="VARCHAR"/>
+        <result property="name" column="name" jdbcType="VARCHAR"/>
+        <result property="major" column="major" jdbcType="VARCHAR"/>
+        <result property="grade" column="grade" jdbcType="VARCHAR"/>
+        <result property="college" column="college" jdbcType="VARCHAR"/>
+        <result property="gander" column="gander" jdbcType="VARCHAR"/>
+        <result property="idcard" column="idcard" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <!--查询单个-->
+    <select id="queryById" resultMap="StudentMap">
+        select
+          id, sno, name, major, grade, college, gander, idcard
+        from document.student
+        where id = #{id}
+    </select>
+
+    <!--查询指定行数据-->
+    <select id="queryAllByLimit" resultMap="StudentMap">
+        select
+          id, sno, name, major, grade, college, gander, idcard
+        from document.student
+    </select>
+
+    <!--通过实体作为筛选条件查询-->
+    <select id="queryAll" resultMap="StudentMap">
+        select
+          id, sno, name, major, grade, college, gander, idcard
+        from document.student
+        <where>
+            <if test="id != null">
+                and id = #{id}
+            </if>
+            <if test="sno != null and sno != ''">
+                and sno = #{sno}
+            </if>
+            <if test="name != null and name != ''">
+                and name = #{name}
+            </if>
+            <if test="major != null and major != ''">
+                and major = #{major}
+            </if>
+            <if test="grade != null and grade != ''">
+                and grade = #{grade}
+            </if>
+            <if test="college != null and college != ''">
+                and college = #{college}
+            </if>
+            <if test="gander != null and gander != ''">
+                and gander = #{gander}
+            </if>
+            <if test="idcard != null and idcard != ''">
+                and idcard = #{idcard}
+            </if>
+        </where>
+    </select>
+    <select id="findStudent" resultType="com.itheima.document.entity.Student">
+        select * from document.student
+        <where>
+            <if test="major != null and major != ''">
+                and major = #{major}
+            </if>
+            <if test="grade != null and grade != ''">
+                and grade = #{grade}
+            </if>
+        </where>
+    </select>
+
+    <!--新增所有列-->
+    <insert id="insert" keyProperty="id" useGeneratedKeys="true">
+        insert into document.student(sno, name, major, grade, college, gander, idcard)
+        values (#{sno}, #{name}, #{major}, #{grade}, #{college}, #{gander}, #{idcard})
+    </insert>
+    <insert id="insertList" parameterType="java.util.List"   keyProperty="id" useGeneratedKeys="true">
+        insert into document.student(sno, name, major, grade, college, gander, idcard)
+        values
+        <foreach collection="list" item="item" index="index" separator=",">
+         (#{item.sno}, #{item.name}, #{item.major}, #{item.grade}, #{item.college}, #{item.gander}, #{item.idcard})
+        </foreach>
+    </insert>
+
+    <!--通过主键修改数据-->
+    <update id="update">
+        update document.student
+        <set>
+            <if test="sno != null and sno != ''">
+                sno = #{sno},
+            </if>
+            <if test="name != null and name != ''">
+                name = #{name},
+            </if>
+            <if test="major != null and major != ''">
+                major = #{major},
+            </if>
+            <if test="grade != null and grade != ''">
+                grade = #{grade},
+            </if>
+            <if test="college != null and college != ''">
+                college = #{college},
+            </if>
+            <if test="gander != null and gander != ''">
+                gander = #{gander},
+            </if>
+            <if test="idcard != null and idcard != ''">
+                idcard = #{idcard},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <!--通过主键删除-->
+    <delete id="deleteById">
+        delete from document.student where id = #{id}
+    </delete>
+
+</mapper>

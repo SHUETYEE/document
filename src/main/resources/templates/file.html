@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <script src="http://www.itxst.com/package/bootstrap-table-1.14.1/jquery-3.3.1/jquery.js"></script>
+    <link href="http://www.itxst.com/package/bootstrap-4.3.1/css/bootstrap.css" rel="stylesheet"/>
+    <link rel="stylesheet" type="text/css" href="https://www.layuicdn.com/layui/css/layui.css"/>
+    <link href="http://www.itxst.com/package/bootstrap-table-1.15.3/bootstrap-table.css" rel="stylesheet"/>
+    <script src="http://www.itxst.com/package/bootstrap-table-1.15.3/bootstrap-table.js"></script>
+    <script src="https://cdn.staticfile.org/popper.js/1.15.0/umd/popper.min.js"></script>
+    <script src="https://cdn.staticfile.org/twitter-bootstrap/4.3.1/js/bootstrap.min.js"></script>
+    <script src="https://www.layuicdn.com/layui/layui.js"></script>
+    <title>Bootstrap Table getSelections例子</title>
+    <style>
+        .table-demo {
+            width: 97%;
+            margin: 30px auto 0px auto;
+        }
+    </style>
+
+</head>
+<body>
+<div id="toolbar">
+
+</div>
+<div class="table-demo">
+    <table id="table" class="text-center"></table>
+</div>
+<script>
+
+    //这段必须放在表格初始化之前。
+    function addFunctionAlty(value, row, index) {
+        return [
+            '<button id="unbind" type="button" class="layui-btn layui-btn-normal">预览</button>',
+        ].join('');
+    }
+
+    window.operateEvents = {
+        'click #unbind': function (e, value, row, index) {
+           window.open("/upload/"+row.path)
+        }
+    };
+
+    // 设置需要显示的列
+    var columns = [{
+        field: "checked",
+        title: '编号',
+        checkbox: true
+    }, {
+        field: 'name',
+        title: '文件名',
+    }, {
+        field: 'operator',
+        title: '上传人',
+    }, {
+        field: 'type',
+        title: '文件格式',
+    }, {
+        field: 'size',
+        title: '文件大小',
+    }, {
+        field: 'uploadtime',
+        title: '上传时间',
+    }, {
+        field: 'operate',
+        title: '操作',
+        events: operateEvents,//给按钮注册事件
+        formatter: addFunctionAlty//表格中增加按钮  
+    }];
+
+
+    $('#table').bootstrapTable({
+        url: 'file/findAll',
+        pagination: true,//开启分页
+        search: true, //开启刷选
+        columns: columns,
+        pageSize: 10,
+        cache: false, // 设置为 false 禁用 AJAX 数据缓存， 默认为true
+        pageList: [10, 25, 50],
+        pageNumber: 1, // 首页页码
+        maintainSelected: true,
+        striped: true,  //表格显示条纹，默认为false
+        clickToSelect: true,//是否启用点击选中行
+        locale: 'zh-CN',//中文支持,
+        toolbar: "#toolbar"
+    });
+
+    function getSels() {
+        var rows = $('#table').bootstrapTable('getSelections');
+    }
+</script>
+
+
+
+</body>
+<script>
+    layui.use('form', function () {
+        var form = layui.form;
+    });
+    layui.use('layer', function () {
+        var $ = layui.jquery,
+            layer = layui.layer;
+    });
+
+    layui.use('upload', function () {
+        upload = layui.upload;
+        upload.render({
+            elem: '#test10'
+            , url: 'file/upload'
+            , accept: 'file' //普通文件
+            , done: function (res) {
+                $('#myModal').modal('hide')
+                layer.alert('上传成功', {
+                    icon: 1,
+                    skin: 'layer-ext-moon'
+                })
+                $('#table').bootstrapTable('refresh');//刷新当前表格数据
+            }
+            , error: function () {
+                $('#myModal2').modal('hide')
+                layer.alert('上传失败', {
+                    icon: 2,
+                    skin: 'layer-ext-moon'
+                })
+            }
+        });
+    });
+
+</script>
+</html>
